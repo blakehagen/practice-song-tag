@@ -7,7 +7,7 @@ var express = require('express'),
 // MODELS //
 var Artist = require('./models/artist');
 var Song = require('./models/song');
-var Artist = require('./models/tag');
+var Tag = require('./models/tag');
 
 var app = express();
 app.use(cors());
@@ -20,25 +20,51 @@ var db = mongoose.connection;
 app.post('/api/artists', function (req, res, next) {
     var artist = new Artist(req.body);
     artist.save(function (err, artist) {
-        return res.status(200).end();
+        return res.status(200).send(artist);
     });
 });
 
 app.get('/api/artists', function (req, res, next) {
-    Artist.find().exec(function(err, artists){
-        return res.json(artists);
+    Artist.find().exec(function (err, artists) {
+        return res.send(artists);
     });
 });
 
+app.get('/api/artists/:id', function (req, res, next) {
+    Artist.findById(req.params.id).populate('songs').exec(function (err, artist) {
+        return res.send(artist);
+    });
+});
 
+app.post('/api/artists/:id/songs', function (req, res, next) {
+    var song = new Song(req.body);
+    Artist.findById(req.params.id).populate('songs').populate('artist').exec(function (err, artist) {
+        song.save(function (err, song) {
+            artist.songs.push(song);
+            artist.save();
+            return res.status(200).send(song);
+        });
+    });
+});
 
+app.get('/api/songs/:id', function (req, res, next) {
+    Song.findById(req.params.id).populate('tags').exec(function (err, song) {
+        return res.send(song);
+    });
+});
 
+app.post('/api/songs/:id/tags', function (req, res) {
+    Tag.findOneAndUpdate({ name: req.body.name }, req.body, { upsert: true }).exec(function (err, tag) {
+        Song.findById(req.params.id).populate('tags').exec(function (err, song) {
+            song.tags.push(tag);
+            song.save(function (err, song) {
+                return res.status(200).send(tag);
+            });
+        });
+    });
+});
 
-
-
-
-
-
+// PORT LISTEN //
 app.listen(port, function () {
-    console.log('I hear you on port ' + port);
+    console.log('listening on port ' + port);
 });

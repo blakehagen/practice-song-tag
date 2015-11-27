@@ -7,8 +7,8 @@ var SongSchema = new Schema({
     genre: { type: String },
     releasedOn: { type: Date },
     isExplicit: { type: Boolean },
-    artist: {type: Schema.Types.ObjectId, ref: 'Artist'},
-    tags: [{type: Schema.Types.ObjectId, ref: 'Tag'}]
+    artist: { type: Schema.Types.ObjectId, ref: 'Artist' },
+    tags: [{ type: Schema.Types.ObjectId, ref: 'Tag' }]
 });
 
 module.exports = mongoose.model('Song', SongSchema);
