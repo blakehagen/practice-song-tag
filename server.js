@@ -54,12 +54,12 @@ app.get('/api/songs/:id', function (req, res, next) {
 });
 
 app.post('/api/songs/:id/tags', function (req, res) {
-    Tag.findOneAndUpdate({ name: req.body.name }, req.body, { upsert: true }).exec(function (err, tag) {
-        Song.findById(req.params.id).populate('tags').exec(function (err, song) {
-            song.tags.push(tag);
-            song.save(function (err, song) {
-                return res.status(200).send(tag);
-            });
+    var tag = new Tag(req.body);
+    tag.save();
+    Song.findById(req.params.id).populate('tags').exec(function (err, song) {
+        song.tags.push(tag);
+        song.save(function (err, song) {
+            return res.status(200).send(tag);
         });
     });
 });
